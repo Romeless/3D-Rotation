@@ -73,4 +73,10 @@ The matrix used for this rotation is the same as the matrix used in 2D rotation 
 
 Usage and result-wise, this method is not very different from Euler Angle rotation. If one want to rotate the object multiple times with different planes, then the order of rotation needs to be specified (similar to Euler, XYZ means X first, Y second, and Z last).
 
-Or, maybe, I'm just misunderstanding stuff and Axis rotation and Euler rotation is the same one rotation. What matters is both worked.
+Or, maybe, I'm just misunderstanding stuff and Axis rotation and Euler rotation are the same one rotation. What matters is both worked.
+
+### How they are translated into code
+
+
+
+### Interesting things I found while experimenting
