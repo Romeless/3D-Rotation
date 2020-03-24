@@ -107,3 +107,14 @@ return new_X, new_Y, new_Z
 The transform/rotate function of axis rotation is not very different from a 2D transform function.  Half of the code is the function of splitting 
 
 ## Interesting things I found while experimenting
+
+One thing I found interesting in my experiment is how Python or the numbers itself aren't 100% accurate. This can be seen in the rotation of XYZ each by 90 degrees of angle.
+
+![A mess of rotation](/examples/mess.png)
+
+As can be seen, the values hover around 0.00e-31 to 8.00e-31 which means, outside of the first 31 decimals, they are practically the same number. However, the plotting is so accurate this very small difference looks like a big mess. This problem is fixed by rounding the values to the first n amount of decimals, I choose 8.
+
+```    return np.round(new_plane_1,decimals=8), np.round(new_plane_2,decimals=8)```
+
+![Rotation Z 90](/examples/euler3.png) This will fix the problem and produces the pic on the left
+
