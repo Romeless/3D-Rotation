@@ -162,5 +162,7 @@ As can be seen, the values hover around 0.00e-31 to 8.00e-31 which means, outsid
 return np.round(new_plane_1,decimals=8), np.round(new_plane_2,decimals=8)
 ```
 
-![Rotation Z 90](/examples/euler3.png) This will fix the problem and produces the pic on the left
+![Rotation Z 90](/examples/euler3.png)
+
+This will fix the problem and produces the pic above
 
