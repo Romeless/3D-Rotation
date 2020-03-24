@@ -75,8 +75,35 @@ Usage and result-wise, this method is not very different from Euler Angle rotati
 
 Or, maybe, I'm just misunderstanding stuff and Axis rotation and Euler rotation are the same one rotation. What matters is both worked.
 
-### How they are translated into code
+## How they are translated into code
 
+### Euler
 
+First, get all points of the object in the form of homgraphy coordinate [x,y,z]
+As the object is an Image in the form of surface object, each plane (X,Y,Z) is a 2D array that stores the coordinate (instead of color like RGB value).
+The coordinate can be accessed row by row and column by column of each plane.
 
-### Interesting things I found while experimenting
+```
+new_X, new_Y, new_Z = np.zeros(X.shape), np.zeros(Y.shape), np.zeros(Z.shape)
+
+for row in range(X.shape[0]):
+  for col in range(X.shape[1]):
+    new_X_coord, new_Y_coord, new_Z_coord = np.array([X[row,col], Y[row,col], Z[row, col]])
+```
+
+Next, for each rotation wanted, dot product the matrix with the homography coordinate. For example, if we want to rotate it XYX, then we would need to multiply it three times across X axis, Y axis, and X axis again before storing the new coordinates
+
+```
+    for matrix in matrices:
+      new_X_coord, new_Y_coord, new_Z_coord = matrix @ np.array([newX, newY, newZ])
+      
+    new_X[row,col], new_Y[row,col], new_Z[row,col] = new_X_coord, new_Y_coord, new_Z_coord
+ 
+return new_X, new_Y, new_Z
+```
+
+### Axis
+
+The transform/rotate function of axis rotation is not very different from a 2D transform function.  Half of the code is the function of splitting 
+
+## Interesting things I found while experimenting
