@@ -9,86 +9,56 @@ img = np.array(Image.open("sample.jpg"))
 print(img.shape)
 img = img / img.max()
 
-def axis_rotate(planeX, planeY, planeZ, angle, order="XYZ"):
-    order_arr = list(order)
-    
-    for i, plane in enumerate(order_arr):
-        if plane == "X":
-            print("PLANE X")
-            A = get_rotation(angle[i])
-            planeY, planeZ = axis_rotate_next(planeY, planeZ, A)
-        elif plane == "Y":
-            print("PLANE Y")
-            A = get_rotation(angle[i])
-            planeX, planeZ = axis_rotate_next(planeX, planeZ, A)
-        elif plane == "Z":
-            print("PLANE Z")
-            A = get_rotation(angle[i])
-            planeX, planeY = axis_rotate_next(planeX, planeY, A)
-        else:
-            print("ORDER WRONG")
-            exit()
-    
-    return planeX, planeY, planeZ
+def transform(XYZ, nx, angle):
+    magnitude = np.linalg.norm(nx)
+    nx = nx / magnitude
+    matrix = R(get_n(nx[0], nx[1], nx[2]), angle)
 
-def axis_rotate_next(plane1, plane2, matrix):
-    new_plane_1 = np.zeros(plane1.shape)
-    new_plane_2 = np.zeros(plane2.shape)
+    #print("magnitude: ", magnitude)
+    #print("nx new: ", nx)
+    #print("matrix: ", matrix)
     
-    for xx in range(plane1.shape[0]):
-        for yy in range(plane1.shape[1]):
-            XY1 = np.array([plane1[xx,yy],plane2[xx,yy],1])
-            
-            new_XY1 = np.array(matrix @ XY1)
-            new_XY1 = new_XY1 / new_XY1[2]
-            
-            #print(XY1, new_XY1)
-            
-            try:
-                new_plane_1[xx,yy] = new_XY1[0]
-                new_plane_2[xx,yy] = new_XY1[1]
-            except IndexError:
-                print("INERR")
-        
-    return np.round(new_plane_1,decimals=8), np.round(new_plane_2,decimals=8)
+    
+    new_X, new_Y, new_Z = np.zeros(XYZ[0].shape), np.zeros(XYZ[1].shape), np.zeros(XYZ[2].shape)
+    for row in range(XYZ[0].shape[0]):
+        for col in range(XYZ[0].shape[1]):
+            #print(np.array([X[row,col], Y[row,col], Z[row, col]]))
+            Xx, Yy, Zz = matrix @ np.array([X[row,col], Y[row,col], Z[row, col]])
 
-def get_rotation(angle):
+            new_X[row,col], new_Y[row,col], new_Z[row,col] = Xx, Yy, Zz 
+    return np.array([new_X, new_Y, new_Z])
+
+def R(n, angle):
     angle = np.radians(angle)
+    return np.eye(3) + np.sin(angle) * n + (1 - np.cos(angle)) * (np.power(n,2))
+
+def get_n(x, y, z):
     return np.array([
-        [np.cos(angle), np.sin(angle), 0],
-        [-np.sin(angle), np.cos(angle), 0],
-        [0, 0, 1]
+        [0,-z,y],
+        [z,0,-x],
+        [-y,x,0]
     ])
 
 X, Y = np.mgrid[0:img.shape[0], 0:img.shape[1]]
 # A blank, straight 0 Z coordinate
 Z = np.zeros(X.shape)
 
-#neoX, neoY, neoZ = axis_rotate(X, Y, Z, angle=[90], order="X")
-#neoX1, neoY1, neoZ1 = axis_rotate(neoX, neoY, neoZ, angle=[90], order="Y")
-#neoX2, neoY2, neoZ2 = axis_rotate(neoX1, neoY1, neoZ1, angle=[90], order="Z")
+nx, ny, nz = 1,0,0
+angle = 90
 
-neoX, neoY, neoZ = axis_rotate(X, Y, Z, angle=[90,90,90], order="XYZ")
+neoXYZ = transform(np.array([X,Y,Z]), np.array([nx,ny,nz]), angle)
 
-test = '''
-fig = plt.figure()#figsize=plt.figaspect(3))
-_, axarr = plt.subplots(nrows=2,ncols=2)#(projection='3d')
-ax = fig.add_subplot(2,2,1, projection='3d')
-ax.plot_surface(X, Y, Z, facecolors=img)
-ax = fig.add_subplot(2,2,2, projection='3d')
-ax.plot_surface(neoX, neoY, neoZ, facecolors=img)
-ax = fig.add_subplot(2,2,3, projection='3d')
-ax.plot_surface(neoX1, neoY1, neoZ1, facecolors=img)
-ax = fig.add_subplot(2,2,4, projection='3d')
-ax.plot_surface(neoX2, neoY2, neoZ2, facecolors=img)
-print(neoX2)
-print(neoY2)
-print(neoZ2)
-'''
-plt.figure()
+plt.figure(figsize=(5,5))
 ax = plt.gca(projection='3d')
 ax.plot_surface(X, Y, Z, facecolors=img)
-plt.figure()
+ax.set_title("Original Image")
+
+plt.savefig("result/original.png")
+
+plt.figure(figsize=(5,5))
 ax = plt.gca(projection='3d')
-ax.plot_surface(neoX, neoY, neoZ, facecolors=img)
+ax.plot_surface(neoXYZ[0], neoXYZ[1], neoXYZ[2], facecolors=img)
+ax.set_title("after Rotation nx = [{},{},{}] angle = {}".format(nx, ny, nz, angle))
+
+plt.savefig("result/after_axis.png")
 plt.show()

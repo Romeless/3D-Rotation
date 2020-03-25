@@ -10,11 +10,9 @@ print(img.shape)
 img = img / img.max()
 
 def transform(XYZ, nx, angle):
-    new_XYZ = np.zeros(XYZ.shape)
-
     magnitude = np.linalg.norm(nx)
     nx = nx / magnitude
-    matrix = R(get_v(nx[0], nx[1], nx[2]), angle)
+    matrix = R(nx, angle)
 
     #print("magnitude: ", magnitude)
     #print("nx new: ", nx)
@@ -31,7 +29,19 @@ def transform(XYZ, nx, angle):
     return np.array([new_X, new_Y, new_Z])
 
 def R(n, angle):
-    return np.eye(3) + np.sin(angle) * n + (1 - np.cos(angle)) * (np.power(n,2))
+    angle = np.radians(angle)
+    x, y, z = n[0], n[1], n[2]
+    v = get_v(x,y,z)
+    w = np.cos(angle/2)
+
+    return np.array(np.eye(3) + 2 * w * v + 2 * v ** 2)
+
+    #return np.array([
+    #    [1 - 2 * (y**2 + z**2), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+    #    [2 * (x * y + z * w), 1 - 2 * (x**2 + z**2), 2 * (y * z - x * 2)],
+    #    [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x**2 + y**2)]
+    #])
+    
 
 def get_v(x, y, z):
     return np.array([
@@ -44,7 +54,7 @@ X, Y = np.mgrid[0:img.shape[0], 0:img.shape[1]]
 # A blank, straight 0 Z coordinate
 Z = np.zeros(X.shape)
 
-nx, ny, nz = 0.5,0.5,0.5
+nx, ny, nz = 1,0,0
 angle = 90
 
 neoXYZ = transform(np.array([X,Y,Z]), np.array([nx,ny,nz]), angle)
