@@ -104,6 +104,65 @@ return new_X, new_Y, new_Z
 
 ### Axis
 
-The transform/rotate function of axis rotation is not very different from a 2D transform function.  Half of the code is the function of splitting 
+The transform/rotate function of axis rotation is not very different from a 2D transform function.  Half of the code is the function of splitting the object into 2 plane:
+```
+def axis_rotate(planeX, planeY, planeZ, angle, order="XYZ"):
+  order_arr = list(order)
+    
+  for i, plane in enumerate(order_arr):
+    if plane == "X":
+      print("PLANE X")
+      A = get_rotation(angle[i])
+      planeY, planeZ = axis_rotate_next(planeY, planeZ, A)
+    elif plane == "Y":
+      print("PLANE Y")
+      A = get_rotation(angle[i])
+      planeX, planeZ = axis_rotate_next(planeX, planeZ, A)
+    elif plane == "Z":
+      print("PLANE Z")
+      A = get_rotation(angle[i])
+      planeX, planeY = axis_rotate_next(planeX, planeY, A)
+  
+  return planeX, planeY, planeZ
+```
+
+This function will split the object into 2 plane, by removing the plane rotated. The 2 plane will then be passed to a transform function which will return the 2 new coordinate of each plane
+
+```
+def axis_rotate_next(plane1, plane2, matrix):
+  new_plane_1 = np.zeros(plane1.shape)
+  new_plane_2 = np.zeros(plane2.shape)
+
+  for xx in range(plane1.shape[0]):
+    for yy in range(plane1.shape[1]):
+      XY1 = np.array([plane1[xx,yy],plane2[xx,yy],1])
+
+      new_XY1 = np.array(matrix @ XY1)
+      new_XY1 = new_XY1 / new_XY1[2]
+
+      new_plane_1[xx,yy] = new_XY1[0]
+      new_plane_2[xx,yy] = new_XY1[1]
+
+  return np.round(new_plane_1,decimals=8), np.round(new_plane_2,decimals=8)
+```
 
 ## Interesting things I found while experimenting
+
+One thing I found interesting in my experiment is how Python or the numbers itself aren't 100% accurate. This can be seen in the rotation of XYZ each by 90 degrees of angle. This is caused by this line of code
+
+```
+return new_plane_1, np.round new_plane_2
+```
+
+![A mess of rotation](/examples/mess.png)
+
+As can be seen, the values hover around 0.00e-31 to 8.00e-31 which means, outside of the first 31 decimals, they are practically the same number. However, the plotting is so accurate this very small difference looks like a big mess. This problem is fixed by rounding the values to the first n amount of decimals, I choose 8.
+
+```
+return np.round(new_plane_1,decimals=8), np.round(new_plane_2,decimals=8)
+```
+
+![Rotation Z 90](/examples/euler3.png)
+
+This will fix the problem and produces the pic above
+
