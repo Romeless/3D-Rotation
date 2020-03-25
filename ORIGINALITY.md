@@ -8,4 +8,4 @@ I understand it's not necessary to make the object an Image but this is what int
 
 - I declare that every part of the code not listed above, I wrote it myself.
 
-- axis.py: The function [euler_rotate_next] is a modified version my [2d transform](https://github.com/Romeless/Affine-2D-Transformation) code. Since, from what I understand, rotating 1 plane of a 3D array is not so different from rotating a 2D array.
+- axis.py: The function [euler_rotate_next] is a modified version my [2d transform](https://github.com/Romeless/Affine-2D-Transformation) code. Since I completely misunderstand how to do the rotation. ~~Since, from what I understand, rotating 1 plane of a 3D array is not so different from rotating a 2D array.~~
