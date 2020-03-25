@@ -34,6 +34,7 @@ def euler_rotate(X, Y, Z, angle, order):
                 Xx, Yy, Zz = matrix_R[i] @ np.array([Xx, Yy, Zz])
 
             new_X[row,col], new_Y[row,col], new_Z[row,col] = Xx, Yy, Zz 
+    #return new_X, new_Y, new_Z
     return np.round(new_X,decimals=8), np.round(new_Y,decimals=8), np.round(new_Z,decimals=8)
 
     
@@ -65,11 +66,29 @@ X, Y = np.mgrid[0:img.shape[0], 0:img.shape[1]]
 # A blank, straight 0 Z coordinate
 Z = np.zeros(X.shape)
 
-neoX, neoY, neoZ = euler_rotate(X, Y, Z, angle=[90,90,90], order="XYZ")
+neoX, neoY, neoZ = euler_rotate(X, Y, Z, angle=[90], order="X")
+neoX1, neoY1, neoZ1 = euler_rotate(neoX, neoY, neoZ, angle=[90], order="Y")
+neoX2, neoY2, neoZ2 = euler_rotate(neoX1, neoY1, neoZ1, angle=[90], order="Z")
+
 plt.figure()
 ax = plt.gca(projection='3d')
 ax.plot_surface(X, Y, Z, facecolors=img)
-plt.figure()
+ax.set_title("Original Image")
+
+plt.figure(figsize=(5,5))
 ax = plt.gca(projection='3d')
 ax.plot_surface(neoX, neoY, neoZ, facecolors=img)
+ax.set_title("after rotation x-axis 90 degree")
+plt.savefig("result/euler_x.png")
+plt.figure(figsize=(5,5))
+ax = plt.gca(projection='3d')
+ax.plot_surface(neoX1, neoY1, neoZ1, facecolors=img)
+ax.set_title("after rotation y-axis 90 degree")
+plt.savefig("result/euler_y.png")
+plt.figure(figsize=(5,5))
+ax = plt.gca(projection='3d')
+ax.plot_surface(neoX2, neoY2, neoZ2, facecolors=img)
+ax.set_title("after rotation z-axis 90 degree")
+plt.savefig("result/euler_z.png")
+
 plt.show()
