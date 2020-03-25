@@ -17,8 +17,6 @@ The rotation I am being tasked to experiment on are as follow:
 2. Axis
 3. Quarternion
 
-Out of the 3, I completely misunderstand what I'm supposed to do in Axis rotation.
-
 ### Original Image
 ![Original](/images/original.png)
 
@@ -53,33 +51,35 @@ The transformation are performed by doing a dot product of the rotation matrix a
 
 ### Axis Rotation
 
-I admit, I completely don't understand what I'm supposed to do here so skip ahead to Unit Quarternions
+Axis rotation uses Rodriguez formula to calculate the matrix transformation. This rotation rotates along a new (x,y,z) axis, and an angle value is needed to set how far the rotation will go. To use this method, the value of the axis needs to be specified, meaning this method needs 4 values: x rotation, y rotation, z rotation, and angle
 
-~~Honestly, I don't quite get what is supposed to be Axis Rotation, however, this is my interpretation:~~
+Rodriguez formula = ```I + sin(theta) * n + (1 - cos(theta) * n ** 2)```
 
-~~Axis Rotation is a rotation that rotates only 1 plane/axis at a time, similar to Euler Angle. However, the difference is, when a plane is being rotated, that plane is outright being **ignored** rather than **not being changed** (Euler). For example, if in a 3D object, 1 plane is removed from the picture, said object is downgraded to being a 2D object. Then, said 2D object is rotated similar to how 2D rotation works. After the rotation is complete, the third plane is added back to the object, returning it back into 3D. ~~
-
-~~The first image above are what the original object looked from a close top-down view, removing the Z angle from equation. The second image are what the object looked from top down after the object is being rotated Z-wise 45 degree. The X and Y coordinates act similarly to 2D rotation. The Z coordinates are not changed because its rotated Z-wise. ~~
-
-
-~~The matrix used for this rotation is the same as the matrix used in 2D rotation and Euler Angle's Z rotation:~~
-
-```
-[np.cos(angle), -np.sin(angle), 0],
-[np.sin(angle), np.cos(angle), 0],
-[0, 0, 1]
-```
-
-~~Usage and result-wise, this method is not very different from Euler Angle rotation. If one want to rotate the object multiple times with different planes, then the order of rotation needs to be specified (similar to Euler, XYZ means X first, Y second, and Z last).~~
+This formula produces a 3x3 transfomation matrix to be multiplied by 
 
 ### Unit Quarternion
 
-I don't completely understand the logic behind this method, what I understand is this method use the representation of 4 component vector (x, y, z, w). How this method works is to use the first 3 component (x,y,z) to create a 3x3 matrix v which is:
+I don't completely understand the logic behind this method, what I understand is this method represent the rotation of an object to 4 component vector (x, y, z, w). How this method works is to use the first 3 component (x,y,z) to create a 3x3 matrix v which is:
 ```
 [0,-z,y]
 [z,0,-x]
 [-y,x,0]
 ```
+
+Then, with a modified Rodriguez formula, a transformation matrix can be calculated:
+```
+R = I + 2 w * v + 2 v ** 2
+
+which result in
+
+R = [1 - 2 * (y**2 + z**2), 2 * (x * y - z * w), 2 * (x * z + y * w)]
+    [2 * (x * y + z * w), 1 - 2 * (x**2 + z**2), 2 * (y * z - x * 2)]
+    [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x**2 + y**2)]
+```
+
+This transformation matrix can then be dot produt to the homography coordinate (x,y,z)
+
+The difference between this method and axis rotation is this rotation can be represented into a quarternion unit (q) and be merged with another quarternion unit to merge rotations.
 
 ## How they are translated into code
 
@@ -108,7 +108,7 @@ Next, for each rotation wanted, dot product the matrix with the homography coord
 return new_X, new_Y, new_Z
 ```
 
-### Unit Quarternions
+### Axis
 
 This method take 3 values of nx, ny, and nz, which translate to where the rotation will go, and angle, which translate to how far the rotation will go.
 
@@ -135,6 +135,20 @@ These two function will generate a matrix R which is used to transform the origi
             new_X[row,col], new_Y[row,col], new_Z[row,col] = Xx, Yy, Zz 
     return np.array([new_X, new_Y, new_Z]
  ```
+ 
+### Unit Quarternion
+
+Similar to Axis rotation, this method takes 3 value of axis rotation and another value for angle.
+
+Difference is how the matrix is calculated:
+```
+v = get_v(x,y,z)
+    w = np.cos(angle/2)
+
+    return np.array(np.eye(3) + 2 * w * v + 2 * v ** 2)
+```
+Also this method supposedly can be merged by another quarternion rotation but I haven't implemented that yet
+
 
 ## Interesting things I found while experimenting
 
@@ -156,3 +170,6 @@ return np.round(new_plane_1,decimals=8), np.round(new_plane_2,decimals=8)
 
 This will fix the problem and produces the pic above
 
+
+## Axis / Quarternion
+Another thing I found interesting is how Axis / Quarternion are basically just the same type of calculation, just differently represented. Quarternion can be represented by a 4 vector (x,y,z,w), just this 4 value can determine where the rotation will go. Another different is Quarternion ability to be merged but I haven't tried that one yet.
